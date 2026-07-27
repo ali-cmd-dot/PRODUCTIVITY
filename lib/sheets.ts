@@ -46,6 +46,20 @@ interface EmployeeBlock {
   statusEndCol: number;
 }
 
+interface FootageRawCell {
+  raised: number;
+  resolved: number;
+  pending: number;
+  resolutionHours: number[];
+}
+
+interface DateAggRawCell {
+  total: number;
+  resolved: number;
+  pending: number;
+  resolutionHours: number[];
+}
+
 function findEmployeeBlocks(header: unknown[]): EmployeeBlock[] {
   const blocks: EmployeeBlock[] = [];
   const starts: { col: number; name: string }[] = [];
@@ -249,14 +263,8 @@ export async function readIssuesData(month: number, year: number): Promise<Issue
   const colIdx = mapHeaderColumns(header, ISSUES_HEADER_MAP);
 
   // footageRaw[employeeName][dateKey] = { raised, resolved, pending, resolutionHours[] }
-  const footageRaw: Record
-    string,
-    Record<string, { raised: number; resolved: number; pending: number; resolutionHours: number[] }>
-  > = {};
-  const byDateRaw: Record
-    string,
-    { total: number; resolved: number; pending: number; resolutionHours: number[] }
-  > = {};
+  const footageRaw: Record<string, Record<string, FootageRawCell>> = {};
+  const byDateRaw: Record<string, DateAggRawCell> = {};
 
   for (let r = 1; r < values.length; r++) {
     const row = values[r];
