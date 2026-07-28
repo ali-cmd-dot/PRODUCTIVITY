@@ -250,6 +250,13 @@ export async function readScheduleData(month: number, year: number): Promise<Sch
 
 // ==================== ISSUES READ ====================
 
+interface EmployeeAggRawCell {
+  totalRequests: number;
+  resolvedCount: number;
+  pendingCount: number;
+  resolutionHours: number[];
+}
+
 export async function readIssuesData(month: number, year: number): Promise<IssuesData> {
   const sheets = getSheetsClient();
   const resp = await sheets.spreadsheets.values.get({
@@ -257,7 +264,7 @@ export async function readIssuesData(month: number, year: number): Promise<Issue
     range: `'${CONFIG.ISSUES_TAB_NAME}'`,
   });
   const values = resp.data.values || [];
-  if (values.length === 0) return { footage: {}, byDate: {} };
+  if (values.length === 0) return { footage: {}, byDate: {}, employeeAgg: {} };
 
   const header = values[0];
   const colIdx = mapHeaderColumns(header, ISSUES_HEADER_MAP);
@@ -265,6 +272,7 @@ export async function readIssuesData(month: number, year: number): Promise<Issue
   // footageRaw[employeeName][dateKey] = { raised, resolved, pending, resolutionHours[] }
   const footageRaw: Record<string, Record<string, FootageRawCell>> = {};
   const byDateRaw: Record<string, DateAggRawCell> = {};
+  const employeeAggRaw: Record<string, EmployeeAggRawCell> = {};
 
   for (let r = 1; r < values.length; r++) {
     const row = values[r];
@@ -291,6 +299,12 @@ export async function readIssuesData(month: number, year: number): Promise<Issue
     const cell = footageRaw[raisedByRaw][dateKey];
     cell.raised++;
 
+    if (!employeeAggRaw[raisedByRaw]) {
+      employeeAggRaw[raisedByRaw] = { totalRequests: 0, resolvedCount: 0, pendingCount: 0, resolutionHours: [] };
+    }
+    const empAgg = employeeAggRaw[raisedByRaw];
+    empAgg.totalRequests++;
+
     if (!byDateRaw[dateKey]) byDateRaw[dateKey] = { total: 0, resolved: 0, pending: 0, resolutionHours: [] };
     const dayStats = byDateRaw[dateKey];
     dayStats.total++;
@@ -301,17 +315,20 @@ export async function readIssuesData(month: number, year: number): Promise<Issue
     if (isResolved) {
       cell.resolved++;
       dayStats.resolved++;
+      empAgg.resolvedCount++;
       const resolvedTs = parseDateTime(row[colIdx.tsResolved]);
       if (resolvedTs) {
         const diffHours = (resolvedTs.getTime() - raisedTs.getTime()) / 3600000;
         if (diffHours >= 0) {
           cell.resolutionHours.push(diffHours);
           dayStats.resolutionHours.push(diffHours);
+          empAgg.resolutionHours.push(diffHours);
         }
       }
     } else {
       cell.pending++;
       dayStats.pending++;
+      empAgg.pendingCount++;
     }
   }
 
@@ -340,5 +357,16 @@ export async function readIssuesData(month: number, year: number): Promise<Issue
     };
   }
 
-  return { footage, byDate };
+  const employeeAgg: IssuesData['employeeAgg'] = {};
+  for (const emp in employeeAggRaw) {
+    const e = employeeAggRaw[emp];
+    employeeAgg[emp] = {
+      totalRequests: e.totalRequests,
+      resolvedCount: e.resolvedCount,
+      pendingCount: e.pendingCount,
+      resolutionHoursAvg: average(e.resolutionHours),
+    };
+  }
+
+  return { footage, byDate, employeeAgg };
 }
