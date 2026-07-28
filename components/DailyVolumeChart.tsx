@@ -76,8 +76,8 @@ export default function DailyVolumeChart({ data }: Props) {
       </div>
       <p className="card-desc">
         Bars = us din total kitni requests aayi (isi se din ka volume km/zyada decide hota hai), line =
-        us din ki completion %. Kisi bhi date pe hover karke konse employee ne kitna raise/complete/pending
-        kiya — sab dikhega.
+        us din ki completion %. Kisi bhi bar/point pe <strong>click</strong> karo — konse employee ne kitna
+        raise/complete/pending kiya, sab fixed dikhega jab tak kahin aur click na karo.
       </p>
       <ResponsiveContainer width="100%" height={420}>
         <ComposedChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
@@ -105,7 +105,7 @@ export default function DailyVolumeChart({ data }: Props) {
             tick={{ fontSize: 11, fill: '#6b7a90' }}
             width={44}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip />} trigger="click" />
           <Bar yAxisId="volume" dataKey="completed" name="Completed" stackId="vol" fill={THEME.blue} barSize={26} />
           <Bar
             yAxisId="volume"
