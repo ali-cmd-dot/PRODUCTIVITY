@@ -32,11 +32,20 @@ export interface DateAggCell {
   resolutionHoursAvg: number | null;
 }
 
+export interface EmployeeIssueAgg {
+  totalRequests: number;
+  resolvedCount: number;
+  pendingCount: number;
+  resolutionHoursAvg: number | null;
+}
+
 export interface IssuesData {
   // footage[employeeName][dateKey] = FootageCell
   footage: Record<string, Record<string, FootageCell>>;
   // byDate[dateKey] = aggregate across all employees for that date
   byDate: Record<string, DateAggCell>;
+  // employeeAgg[employeeName] = monthly totals for that employee
+  employeeAgg: Record<string, EmployeeIssueAgg>;
 }
 
 // ---- Combined, chart-ready shape returned by /api/report ----
@@ -97,4 +106,65 @@ export interface ReportResponse {
   footageTrend: FootageTrendPoint[];
   dailyVolume: DailyVolumePoint[];
   lowCompletionThreshold: number;
+  dayOverview: DayOverviewRow[];
+  employeeSummary: EmployeeSummaryRow[];
+  matrix: MatrixRow[];
+  matrixDates: DateEntry[];
+  footageReport: FootageReportRow[];
+}
+
+// ---- Table 1: Day-Wise Productivity Overview ----
+export interface DayOverviewRow {
+  dateKey: string;
+  dateLabel: string;
+  employee: string;
+  total: number;
+  completed: number;
+  pending: number;
+  completionPct: number;
+  note: string;
+}
+
+// ---- Table 2: Employee Monthly Summary ----
+export interface EmployeeSummaryRow {
+  employee: string;
+  totalClients: number;
+  totalCompleted: number;
+  totalPending: number;
+  completionPct: number;
+  daysPresent: number;
+  avgClientsPerDay: number;
+  note: string;
+  totalRequests: number;
+  resolvedCount: number;
+  pendingCount: number;
+  avgResolutionHrs: number | null;
+}
+
+// ---- Table 3: Day-by-Day Matrix ----
+export interface MatrixCell {
+  total: number;
+  completed: number;
+  pending: number;
+  completionPct: number;
+  footageRaised: number;
+  isLow: boolean;
+}
+
+export interface MatrixRow {
+  employee: string;
+  cells: Record<string, MatrixCell | null>; // keyed by dateKey
+  monthTotal: MatrixCell;
+  note: string;
+}
+
+// ---- Table 4: Footage Requests Daily Report ----
+export interface FootageReportRow {
+  dateLabel: string;
+  totalRequests: number;
+  completed: number;
+  pending: number;
+  completionPct: number;
+  avgCompletionTimeLabel: string;
+  isTotalRow: boolean;
 }
