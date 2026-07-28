@@ -5,10 +5,24 @@ import type { ReportResponse } from '@/lib/types';
 import ClientCompletionTrendChart from '@/components/ClientCompletionTrendChart';
 import FootageRequestTrendChart from '@/components/FootageRequestTrendChart';
 import DailyVolumeChart from '@/components/DailyVolumeChart';
+import DayOverviewTable from '@/components/DayOverviewTable';
+import EmployeeSummaryTable from '@/components/EmployeeSummaryTable';
+import MatrixTable from '@/components/MatrixTable';
+import FootageReportTable from '@/components/FootageReportTable';
 
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December',
+];
+
+type TabKey = 'charts' | 'dayOverview' | 'employeeSummary' | 'matrix' | 'footageReport';
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: 'charts', label: 'Charts' },
+  { key: 'dayOverview', label: 'Day Overview' },
+  { key: 'employeeSummary', label: 'Employee Summary' },
+  { key: 'matrix', label: 'Matrix' },
+  { key: 'footageReport', label: 'Footage Requests' },
 ];
 
 export default function DashboardPage() {
@@ -18,6 +32,7 @@ export default function DashboardPage() {
   const [report, setReport] = useState<ReportResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<TabKey>('charts');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -112,9 +127,33 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <ClientCompletionTrendChart data={report.employeeTrend} employees={report.employees} />
-          <FootageRequestTrendChart data={report.footageTrend} employees={report.employees} />
-          <DailyVolumeChart data={report.dailyVolume} />
+          <div className="tab-bar">
+            {TABS.map((t) => (
+              <button
+                key={t.key}
+                className={`tab-btn ${tab === t.key ? 'active' : ''}`}
+                onClick={() => setTab(t.key)}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {tab === 'charts' && (
+            <>
+              <ClientCompletionTrendChart data={report.employeeTrend} employees={report.employees} />
+              <FootageRequestTrendChart data={report.footageTrend} employees={report.employees} />
+              <DailyVolumeChart data={report.dailyVolume} />
+            </>
+          )}
+
+          {tab === 'dayOverview' && <DayOverviewTable data={report.dayOverview} employees={report.employees} />}
+
+          {tab === 'employeeSummary' && <EmployeeSummaryTable data={report.employeeSummary} />}
+
+          {tab === 'matrix' && <MatrixTable data={report.matrix} dates={report.matrixDates} />}
+
+          {tab === 'footageReport' && <FootageReportTable data={report.footageReport} />}
         </>
       )}
     </div>
