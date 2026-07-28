@@ -71,7 +71,7 @@ function CustomTooltip({ active, payload, label, employees }: TooltipProps<numbe
 }
 
 export default function FootageRequestTrendChart({ data, employees }: Props) {
-  const [selected, setSelected] = useState<Set<string>>(() => new Set(employees));
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(employees.slice(0, 5)));
 
   const rows = useMemo(() => buildRows(data), [data]);
 
@@ -93,7 +93,8 @@ export default function FootageRequestTrendChart({ data, employees }: Props) {
       </div>
       <p className="card-desc">
         Har din har employee ne footage request kitni complete ki, usi se trend line upar/neeche hoti hai.
-        Point pe hover karke raised / completed / pending dikhega.
+        Kisi bhi point pe <strong>click</strong> karo — raised / completed / pending fixed dikhega. Default me
+        sirf 5 employees dikh rahe hain — right side checkbox se aur add/remove karo.
       </p>
       <div className="chart-body">
         <div className="chart-area">
@@ -109,7 +110,7 @@ export default function FootageRequestTrendChart({ data, employees }: Props) {
                 interval="preserveStartEnd"
               />
               <YAxis tick={{ fontSize: 11, fill: '#6b7a90' }} allowDecimals={false} width={40} />
-              <Tooltip content={<CustomTooltip employees={employees} />} />
+              <Tooltip content={<CustomTooltip employees={employees} />} trigger="click" />
               {visibleEmployees.map((emp) => (
                 <Line
                   key={emp}
