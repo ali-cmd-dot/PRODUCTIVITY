@@ -87,7 +87,7 @@ function CustomTooltip({ active, payload, label, employees }: TooltipProps<numbe
 }
 
 export default function ClientCompletionTrendChart({ data, employees }: Props) {
-  const [selected, setSelected] = useState<Set<string>>(() => new Set(employees));
+  const [selected, setSelected] = useState<Set<string>>(() => new Set(employees.slice(0, 5)));
 
   const rows = useMemo(() => buildRows(data), [data]);
 
@@ -108,8 +108,10 @@ export default function ClientCompletionTrendChart({ data, employees }: Props) {
         <h3 className="card-title">Client Completion % Trend — by Employee</h3>
       </div>
       <p className="card-desc">
-        Har date pe har employee ka % clients complete. Point pe hover karke total / completed / pending
-        clients aur footage requests (raised / completed / pending) dikhega.
+        Har date pe har employee ka % clients complete. Kisi bhi point pe <strong>click</strong> karo — total /
+        completed / pending clients aur footage requests (raised / completed / pending) fixed dikhega, jab tak
+        kahin aur click na karo. Default me sirf 5 employees dikh rahe hain — right side checkbox se aur
+        add/remove karo.
       </p>
       <div className="chart-body">
         <div className="chart-area">
@@ -130,7 +132,7 @@ export default function ClientCompletionTrendChart({ data, employees }: Props) {
                 unit="%"
                 width={44}
               />
-              <Tooltip content={<CustomTooltip employees={employees} />} />
+              <Tooltip content={<CustomTooltip employees={employees} />} trigger="click" />
               {visibleEmployees.map((emp) => (
                 <Line
                   key={emp}
